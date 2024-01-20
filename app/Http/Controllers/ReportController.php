@@ -4,17 +4,21 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use App\Models\tbl_serverconfig_airtime;
+use App\Models\tbl_airtime2cash;
+use Illuminate\Support\Facades\Auth;
 use App\Models\tbl_serverconfig_data;
+use App\Models\tbl_serverconfig_airtime;
+use App\Models\tbl_serverconfig_betting;
 use App\Models\tbl_serverconfig_cabletv;
 use App\Models\tbl_serverconfig_electricity;
-use App\Models\tbl_serverconfig_betting;
-use App\Models\tbl_airtime2cash;
 
 class ReportController extends Controller
 {
     public function getDailyReport()
 {
+    if (Auth::check()) {
+        if (Auth::user()->role_id == 1) {
+        
     $currentDate = Carbon::now()->toDateString();
     $previousDate = Carbon::yesterday()->toDateString();
 
@@ -45,12 +49,28 @@ class ReportController extends Controller
         'electricity' => $electricityReport,
         'betting' => $bettingReport,
     ]);
+        }else{
+            return response()->json([
+                "status" => "401",
+                "message" => "You are not allowed to view all users."
+            ]);
+        }
+    }else{
+        return response()->json([
+            "status" => "200",
+            "message" => "Unauthenticated"
+        ]);
+    }
+
 }
 
 
     public function getMonthlyReport()
 {
-    $currentMonth = Carbon::now()->month;
+
+    if (Auth::check()) {
+        if (Auth::user()->role_id == 1) {
+           $currentMonth = Carbon::now()->month;
     $previousMonth = $currentMonth - 1;
 
     $dataReport = tbl_serverconfig_data::whereMonth('created_at', $currentMonth)
@@ -80,40 +100,69 @@ class ReportController extends Controller
         'electricity' => $electricityReport,
         'betting' => $bettingReport,
     ]);
+        }else{
+            return response()->json([
+                "status" => "401",
+                "message" => "You are not allowed to view all users."
+            ]);
+        }
+    }else{
+        return response()->json([
+            "status" => "200",
+            "message" => "Unauthenticated"
+        ]);
+    }
+ 
 }
 
     public function getYearlyReport()
     {
-        $currentYear = Carbon::now()->year;
-        $previousYear = $currentYear - 1;
-    
-        $dataReport = tbl_serverconfig_data::whereYear('created_at', $currentYear)
-            ->orWhereYear('created_at', $previousYear)
-            ->get();
-    
-        $airtimeReport = tbl_serverconfig_airtime::whereYear('created_at', $currentYear)
-            ->orWhereYear('created_at', $previousYear)
-            ->get();
-    
-        $cableTVReport = tbl_serverconfig_cabletv::whereYear('created_at', $currentYear)
-            ->orWhereYear('created_at', $previousYear)
-            ->get();
-    
-        $electricityReport = tbl_serverconfig_electricity::whereYear('created_at', $currentYear)
-            ->orWhereYear('created_at', $previousYear)
-            ->get();
-    
-        $bettingReport = tbl_serverconfig_betting::whereYear('created_at', $currentYear)
-            ->orWhereYear('created_at', $previousYear)
-            ->get();
-    
-        return response()->json([
-            'data' => $dataReport,
-            'airtime' => $airtimeReport,
-            'cabletv' => $cableTVReport,
-            'electricity' => $electricityReport,
-            'betting' => $bettingReport,
-        ]);
+
+        if (Auth::check()) {
+            if (Auth::user()->role_id == 1) {
+                $currentYear = Carbon::now()->year;
+                $previousYear = $currentYear - 1;
+            
+                $dataReport = tbl_serverconfig_data::whereYear('created_at', $currentYear)
+                    ->orWhereYear('created_at', $previousYear)
+                    ->get();
+            
+                $airtimeReport = tbl_serverconfig_airtime::whereYear('created_at', $currentYear)
+                    ->orWhereYear('created_at', $previousYear)
+                    ->get();
+            
+                $cableTVReport = tbl_serverconfig_cabletv::whereYear('created_at', $currentYear)
+                    ->orWhereYear('created_at', $previousYear)
+                    ->get();
+            
+                $electricityReport = tbl_serverconfig_electricity::whereYear('created_at', $currentYear)
+                    ->orWhereYear('created_at', $previousYear)
+                    ->get();
+            
+                $bettingReport = tbl_serverconfig_betting::whereYear('created_at', $currentYear)
+                    ->orWhereYear('created_at', $previousYear)
+                    ->get();
+            
+                return response()->json([
+                    'data' => $dataReport,
+                    'airtime' => $airtimeReport,
+                    'cabletv' => $cableTVReport,
+                    'electricity' => $electricityReport,
+                    'betting' => $bettingReport,
+                ]);
+            }else{
+                return response()->json([
+                    "status" => "401",
+                    "message" => "You are not allowed to view all users."
+                ]);
+            }
+        }else{
+            return response()->json([
+                "status" => "200",
+                "message" => "Unauthenticated"
+            ]);
+        }
+     
     }
     
 }

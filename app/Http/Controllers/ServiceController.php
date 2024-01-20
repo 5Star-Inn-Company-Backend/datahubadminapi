@@ -3,17 +3,22 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\tbl_serverconfig_airtime;
+use App\Models\tbl_airtime2cash;
+use Illuminate\Support\Facades\Auth;
 use App\Models\tbl_serverconfig_data;
+use App\Models\tbl_serverconfig_airtime;
+use App\Models\tbl_serverconfig_betting;
 use App\Models\tbl_serverconfig_cabletv;
 use App\Models\tbl_serverconfig_electricity;
-use App\Models\tbl_serverconfig_betting;
-use App\Models\tbl_airtime2cash;
 
 class ServiceController extends Controller
 {
     public function modifyairtime(Request $request, $id)
     {
+
+        if (Auth::check()) {
+            if (Auth::user()->role_id == 1) {
+            
         // Validate the request parameters
         $request->validate([
             'status' => 'required',
@@ -31,11 +36,27 @@ class ServiceController extends Controller
 
         // Return a JSON response indicating that it has been modified
         return response()->json(['message' => 'You have successfully modified Airtime plan', 'user' =>  $airtime]);
+            }else{
+                return response()->json([
+                    "status" => "401",
+                    "message" => "You are not allowed to view all users."
+                ]);
+            }
+        }else{
+            return response()->json([
+                "status" => "200",
+                "message" => "Unauthenticated"
+            ]);
+        }
+
     }
 
     public function modifydata(Request $request, $id)
     {
-        // Validate the request parameters
+
+        if (Auth::check()) {
+            if (Auth::user()->role_id == 1) {
+                 // Validate the request parameters
         $request->validate([
             'status' => 'required',
         ]);
@@ -52,11 +73,28 @@ class ServiceController extends Controller
 
         // Return a JSON response indicating that it has been modified
         return response()->json(['message' => 'You have successfully modified Data plan', 'Dataplan' =>  $data]);
+            }else{
+                return response()->json([
+                    "status" => "401",
+                    "message" => "You are not allowed to view all users."
+                ]);
+            }
+        }else{
+            return response()->json([
+                "status" => "200",
+                "message" => "Unauthenticated"
+            ]);
+        }
+
+   
     }
 
     public function modifytvplan(Request $request, $id)
     {
-        // Validate the request parameters
+
+        if (Auth::check()) {
+            if (Auth::user()->role_id == 1) {
+              // Validate the request parameters
         $request->validate([
             'status' => 'required',
         ]);
@@ -73,12 +111,28 @@ class ServiceController extends Controller
 
         // Return a JSON response indicating that it has been modified
         return response()->json(['message' => 'You have successfully modified Tv plan', 'Tvplans' =>  $tvplan]);
+            }else{
+                return response()->json([
+                    "status" => "401",
+                    "message" => "You are not allowed to view all users."
+                ]);
+            }
+        }else{
+            return response()->json([
+                "status" => "200",
+                "message" => "Unauthenticated"
+            ]);
+        }
+      
     }
 
     public function modifyelectricity(Request $request, $id)
     {
-              // Validate the request parameters
-              $request->validate([
+
+        if (Auth::check()) {
+            if (Auth::user()->role_id == 1) {
+               // Validate the request parameters
+               $request->validate([
                 'status' => 'required',
             ]);
     
@@ -94,12 +148,29 @@ class ServiceController extends Controller
     
             // Return a JSON response indicating that it has been modified
             return response()->json(['message' => 'You have successfully modified Electricity plan', 'Electricity plans' =>  $electricity]);
+            }else{
+                return response()->json([
+                    "status" => "401",
+                    "message" => "You are not allowed to view all users."
+                ]);
+            }
+        }else{
+            return response()->json([
+                "status" => "200",
+                "message" => "Unauthenticated"
+            ]);
+        }
+
+           
     }
 
     public function modifybetting(Request $request, $id)
     {
-              // Validate the request parameters
-              $request->validate([
+
+        if (Auth::check()) {
+            if (Auth::user()->role_id == 1) {
+             // Validate the request parameters
+             $request->validate([
                 'status' => 'required',
             ]);
     
@@ -115,10 +186,27 @@ class ServiceController extends Controller
     
             // Return a JSON response indicating that it has been modified
             return response()->json(['message' => 'You have successfully modified Betting plan', 'Betting plans' =>  $electricity]);
+            }else{
+                return response()->json([
+                    "status" => "401",
+                    "message" => "You are not allowed to view all users."
+                ]);
+            }
+        }else{
+            return response()->json([
+                "status" => "200",
+                "message" => "Unauthenticated"
+            ]);
+        }
+             
     }
 
     public function modifyairtime2cash(Request $request, $id)
     {
+
+        if (Auth::check()) {
+            if (Auth::user()->role_id == 1) {
+            
               // Validate the request parameters
               $request->validate([
                 'status' => 'required',
@@ -136,5 +224,18 @@ class ServiceController extends Controller
     
             // Return a JSON response indicating that it has been modified
             return response()->json(['message' => 'You have successfully modified Airtime2cash', 'Airtime2cash' =>  $airtime2cash]);
+            }else{
+                return response()->json([
+                    "status" => "401",
+                    "message" => "You are not allowed to view all users."
+                ]);
+            }
+        }else{
+            return response()->json([
+                "status" => "200",
+                "message" => "Unauthenticated"
+            ]);
+        }
+
     }
 }

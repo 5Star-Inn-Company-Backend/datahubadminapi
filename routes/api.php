@@ -18,9 +18,16 @@ use App\Http\Controllers\TransactionController;
 |
 */
 
+//auth
+Route::post('login', [UserController::class, 'login']);
+Route::post('register', [UserController::class, 'register']);
+
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::group(['middleware' => 'auth:sanctum'], function (){
 //user modules routes
 Route::get('allusers', [UserController::class, 'listusers']);
 Route::post('searchuser', [UserController::class, 'searchusers']);
@@ -52,9 +59,16 @@ Route::post('modifytvplan/{id}', [ServiceController::class, 'modifytvplan']);
 Route::post('modifyelectricity/{id}', [ServiceController::class, 'modifyelectricity']);
 Route::post('modifybetting/{id}', [ServiceController::class, 'modifybetting']);
 Route::post('modifyairtime2cash/{id}', [ServiceController::class, 'modifyairtime2cash']);
+Route::get('listallairtime', [ServiceController::class, 'listallairtime']);
+Route::get('listlldata', [ServiceController::class, 'listlldata']);
+Route::get('listalltvplan', [ServiceController::class, 'listalltvplan']);
+Route::get('listelectricity', [ServiceController::class, 'listelectricity']);
+Route::get('listbetting', [ServiceController::class, 'listbetting']);
+Route::get('listairtime2cash', [ServiceController::class, 'listairtime2cash']);
 
 //report modules
 
 Route::get('dailyreport', [ReportController::class, 'getdailyreport']);
 Route::get('monthlyreport', [ReportController::class, 'getmonthlyreport']);
 Route::get('yearlyreport', [ReportController::class, 'getyearlyreport']);
+});
