@@ -68,7 +68,14 @@ class UserController extends Controller
 
         if (Auth::attempt(['email' => $email, 'password' => $password])) {
             $user = $request->user();
-            $tokenresult = $user->createToken('Personal Access Token');
+
+            if($user->role_id != 1){
+                return response()->json([
+                    "status" => false,
+                    "message" => "Unauthorized credentials",
+                ], 401);
+            }
+            $tokenresult = $user->createToken('admin');
             $token = $tokenresult->plainTextToken;
             $expires_at = Carbon::now()->addweeks(1);
             return response()->json([
@@ -154,9 +161,9 @@ class UserController extends Controller
                 "message" => "Unauthenticated"
             ]);
         }
-        
+
     }
-    
+
     // Modify user details
     public function modifyuser(Request $request, $userid)
     {
@@ -194,7 +201,7 @@ class UserController extends Controller
                 "message" => "Unauthenticated"
             ]);
         }
-     
+
     }
 
     // Suspend user
@@ -240,7 +247,7 @@ class UserController extends Controller
                 "message" => "Unauthenticated"
             ]);
         }
-       
+
     }
 
     // Retrieve user transactions
@@ -276,6 +283,6 @@ class UserController extends Controller
                 "message" => "Unauthenticated"
             ]);
         }
-       
+
     }
 }
