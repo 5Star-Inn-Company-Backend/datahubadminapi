@@ -8,12 +8,25 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
 
     public function register(Request $request)
     {
+         $validator = Validator::make($request->all(), [
+        'email' => 'required|email|unique:users',
+        'phone' => 'required|unique:users',
+        // Add other validation rules as needed
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => false,
+            'message' => $validator->errors(),
+        ], 422);
+    }
         $user = new User();
         $user->firstname = $request->firstname;
         $user->lastname = $request->lastname;
@@ -25,6 +38,7 @@ class UserController extends Controller
         $user->bvn = $request->bvn;
         $user->bank_code = $request->bank_code;
         $user->account_name = $request->account_name;
+        $user->role_id = 1;
 
         $user->password = Hash::make($request->password);
         $user->save();
@@ -113,13 +127,21 @@ class UserController extends Controller
         $searchTerm = $request->input('search');
 
         // Search users based on the criteria (you can modify this query based on your requirements)
-        $users = User::where('firstname', 'like', '%' . $searchTerm . '%')->get();
+        $users = User::where('firstname', 'like', '%' . $searchTerm . '%')->orwhere('lastname', 'like', '%' . $searchTerm . '%')->get();
 
         // Extract names from the search result
-        $userNames = $users->pluck('firstname');
+        // Extract names from the search result
+        $names = $users->map(function ($user) {
+            return $user->firstname . ' ' . $user->lastname;
+        });
+
+        // $firstNames = $users->pluck('firstname');
+        // $lastName = $users->pluck('lastname');
 
         // Return a JSON response with the search result
-        return response()->json(['search_result' => $userNames]);
+        return response()->json([
+            'search_result' => $users,
+        ]);
             }else{
                 return response()->json([
                     "status" => "401",

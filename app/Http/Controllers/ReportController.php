@@ -11,158 +11,165 @@ use App\Models\tbl_serverconfig_airtime;
 use App\Models\tbl_serverconfig_betting;
 use App\Models\tbl_serverconfig_cabletv;
 use App\Models\tbl_serverconfig_electricity;
+use App\Models\transaction;
 
 class ReportController extends Controller
 {
-    public function getDailyReport()
-{
-    if (Auth::check()) {
-        if (Auth::user()->role_id == 1) {
-        
-    $currentDate = Carbon::now()->toDateString();
-    $previousDate = Carbon::yesterday()->toDateString();
-
-    $dataReport = tbl_serverconfig_data::whereDate('created_at', $currentDate)
-        ->orWhereDate('created_at', $previousDate)
-        ->get();
-
-    $airtimeReport = tbl_serverconfig_airtime::whereDate('created_at', $currentDate)
-        ->orWhereDate('created_at', $previousDate)
-        ->get();
-
-    $cableTVReport = tbl_serverconfig_cabletv::whereDate('created_at', $currentDate)
-        ->orWhereDate('created_at', $previousDate)
-        ->get();
-
-    $electricityReport = tbl_serverconfig_electricity::whereDate('created_at', $currentDate)
-        ->orWhereDate('created_at', $previousDate)
-        ->get();
-
-    $bettingReport = tbl_serverconfig_betting::whereDate('created_at', $currentDate)
-        ->orWhereDate('created_at', $previousDate)
-        ->get();
-
-    return response()->json([
-        'data' => $dataReport,
-        'airtime' => $airtimeReport,
-        'cabletv' => $cableTVReport,
-        'electricity' => $electricityReport,
-        'betting' => $bettingReport,
-    ]);
-        }else{
-            return response()->json([
-                "status" => "401",
-                "message" => "You are not allowed to view all users."
-            ]);
-        }
-    }else{
-        return response()->json([
-            "status" => "200",
-            "message" => "Unauthenticated"
-        ]);
-    }
-
-}
-
-
-    public function getMonthlyReport()
-{
-
-    if (Auth::check()) {
-        if (Auth::user()->role_id == 1) {
-           $currentMonth = Carbon::now()->month;
-    $previousMonth = $currentMonth - 1;
-
-    $dataReport = tbl_serverconfig_data::whereMonth('created_at', $currentMonth)
-        ->orWhereMonth('created_at', $previousMonth)
-        ->get();
-
-    $airtimeReport = tbl_serverconfig_airtime::whereMonth('created_at', $currentMonth)
-        ->orWhereMonth('created_at', $previousMonth)
-        ->get();
-
-    $cableTVReport = tbl_serverconfig_cabletv::whereMonth('created_at', $currentMonth)
-        ->orWhereMonth('created_at', $previousMonth)
-        ->get();
-
-    $electricityReport = tbl_serverconfig_electricity::whereMonth('created_at', $currentMonth)
-        ->orWhereMonth('created_at', $previousMonth)
-        ->get();
-
-    $bettingReport = tbl_serverconfig_betting::whereMonth('created_at', $currentMonth)
-        ->orWhereMonth('created_at', $previousMonth)
-        ->get();
-
-    return response()->json([
-        'data' => $dataReport,
-        'airtime' => $airtimeReport,
-        'cabletv' => $cableTVReport,
-        'electricity' => $electricityReport,
-        'betting' => $bettingReport,
-    ]);
-        }else{
-            return response()->json([
-                "status" => "401",
-                "message" => "You are not allowed to view all users."
-            ]);
-        }
-    }else{
-        return response()->json([
-            "status" => "200",
-            "message" => "Unauthenticated"
-        ]);
-    }
- 
-}
-
-    public function getYearlyReport()
+    public function getDailyReport(Request $request)
     {
+        try {
 
-        if (Auth::check()) {
-            if (Auth::user()->role_id == 1) {
-                $currentYear = Carbon::now()->year;
-                $previousYear = $currentYear - 1;
-            
-                $dataReport = tbl_serverconfig_data::whereYear('created_at', $currentYear)
-                    ->orWhereYear('created_at', $previousYear)
-                    ->get();
-            
-                $airtimeReport = tbl_serverconfig_airtime::whereYear('created_at', $currentYear)
-                    ->orWhereYear('created_at', $previousYear)
-                    ->get();
-            
-                $cableTVReport = tbl_serverconfig_cabletv::whereYear('created_at', $currentYear)
-                    ->orWhereYear('created_at', $previousYear)
-                    ->get();
-            
-                $electricityReport = tbl_serverconfig_electricity::whereYear('created_at', $currentYear)
-                    ->orWhereYear('created_at', $previousYear)
-                    ->get();
-            
-                $bettingReport = tbl_serverconfig_betting::whereYear('created_at', $currentYear)
-                    ->orWhereYear('created_at', $previousYear)
-                    ->get();
-            
+            if (Auth::check()) {
+
+                if (Auth::user()->role_id == 1) {
+                    // Get the date parameter from the request
+                    $requestedDate = $request->input('date');
+
+                    // Validate the date format (you may want to customize the validation based on your needs)
+                    if (!\DateTime::createFromFormat('Y-m-d', $requestedDate)) {
+                        throw new \InvalidArgumentException('Invalid date format. Please provide a date in the format YYYY-MM-DD.');
+                    }
+
+                    $dataReport = transaction::where('transaction_type', 'data')->whereDate('created_at', $requestedDate)->get();
+
+                    $airtimeReport = transaction::where('transaction_type', 'airtime')->whereDate('created_at', $requestedDate)->get();
+
+                    $cableTVReport = transaction::where('transaction_type', 'cabletv')->whereDate('created_at', $requestedDate)->get();
+
+                    $electricityReport = transaction::where('transaction_type', 'electricity')->whereDate('created_at', $requestedDate)->get();
+
+                    $bettingReport = transaction::where('transaction_type', 'betting')->whereDate('created_at', $requestedDate)->get();
+
+                    return response()->json([
+                        'data' => $dataReport,
+                        'airtime' => $airtimeReport,
+                        'cabletv' => $cableTVReport,
+                        'electricity' => $electricityReport,
+                        'betting' => $bettingReport,
+                    ]);
+                } else {
+                    return response()->json([
+                        "status" => "401",
+                        "message" => "You are not Authorize to carry out this action."
+                    ]);
+                }
+            } else {
                 return response()->json([
-                    'data' => $dataReport,
-                    'airtime' => $airtimeReport,
-                    'cabletv' => $cableTVReport,
-                    'electricity' => $electricityReport,
-                    'betting' => $bettingReport,
-                ]);
-            }else{
-                return response()->json([
-                    "status" => "401",
-                    "message" => "You are not allowed to view all users."
+                    "status" => "200",
+                    "message" => "Unauthenticated"
                 ]);
             }
-        }else{
+        } catch (\InvalidArgumentException $e) {
             return response()->json([
-                "status" => "200",
-                "message" => "Unauthenticated"
+                "status" => "400",
+                "message" => $e->getMessage()
             ]);
         }
-     
     }
-    
+
+
+
+    public function getMonthlyReport(Request $request)
+    {
+        try {
+
+            if (Auth::check()) {
+                if (Auth::user()->role_id == 1) {
+
+                    // Get the date parameter from the request
+                    $requestedMonth = $request->input('month');
+
+                    if (!\DateTime::createFromFormat('m', $requestedMonth)) {
+                        throw new \InvalidArgumentException('Invalid date format. Please provide a date in the format m.');
+                    }
+
+                    $dataReport = transaction::where('transaction_type', 'data')->whereMonth('created_at', $requestedMonth)->get();
+
+                    $airtimeReport = transaction::where('transaction_type', 'airtime')->whereMonth('created_at', $requestedMonth)->get();
+
+                    $cableTVReport = transaction::where('transaction_type', 'cabletv')->whereMonth('created_at', $requestedMonth)->get();
+
+                    $electricityReport = transaction::where('transaction_type', 'electricity')->whereMonth('created_at', $requestedMonth)->get();
+
+                    $bettingReport = transaction::where('transaction_type', 'betting')->whereMonth('created_at', $requestedMonth)->get();
+
+                    return response()->json([
+                        'data' => $dataReport,
+                        'airtime' => $airtimeReport,
+                        'cabletv' => $cableTVReport,
+                        'electricity' => $electricityReport,
+                        'betting' => $bettingReport,
+                    ]);
+                } else {
+                    return response()->json([
+                        "status" => "401",
+                        "message" => "You are not allowed to view all users."
+                    ]);
+                }
+            } else {
+                return response()->json([
+                    "status" => "200",
+                    "message" => "Unauthenticated"
+                ]);
+            }
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                "status" => "400",
+                "message" => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function getYearlyReport(Request $request)
+    {
+        try {
+
+            if (Auth::check()) {
+                if (Auth::user()->role_id == 1) {
+
+                    // Get the date parameter from the request
+                    $requestedYear = $request->input('year');
+
+                    // Validate the date format (you may want to customize the validation based on your needs)
+                    if (!\DateTime::createFromFormat('Y', $requestedYear)) {
+                        throw new \InvalidArgumentException('Invalid year format. Please provide a year in the format Y.');
+                    }
+
+
+                    $dataReport = transaction::where('transaction_type', 'data')->whereYear('created_at', $requestedYear)->get();
+
+                    $airtimeReport = transaction::where('transaction_type', 'airtime')->whereYear('created_at', $requestedYear)->get();
+
+                    $cableTVReport = transaction::where('transaction_type', 'cabletv')->whereYear('created_at', $requestedYear)->get();
+
+                    $electricityReport = transaction::where('transaction_type', 'electricity')->whereYear('created_at', $requestedYear)->get();
+
+                    $bettingReport = transaction::where('transaction_type', 'betting')->whereYear('created_at', $requestedYear)->get();
+
+                    return response()->json([
+                        'data' => $dataReport,
+                        'airtime' => $airtimeReport,
+                        'cabletv' => $cableTVReport,
+                        'electricity' => $electricityReport,
+                        'betting' => $bettingReport,
+                    ]);
+                } else {
+                    return response()->json([
+                        "status" => "401",
+                        "message" => "You are not Authorize to carry out this action."
+                    ]);
+                }
+            } else {
+                return response()->json([
+                    "status" => "200",
+                    "message" => "Unauthenticated"
+                ]);
+            }
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                "status" => "400",
+                "message" => $e->getMessage()
+            ]);
+        }
+    }
 }

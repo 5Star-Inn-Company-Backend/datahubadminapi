@@ -10,9 +10,18 @@ use App\Models\tbl_serverconfig_airtime;
 use App\Models\tbl_serverconfig_betting;
 use App\Models\tbl_serverconfig_cabletv;
 use App\Models\tbl_serverconfig_electricity;
+use App\Models\ownwebsite;
 
 class ServiceController extends Controller
 {
+    public function listallairtime()
+    {
+        $airtime = tbl_serverconfig_airtime::all();
+        return response()->json([
+            "status" => 200,
+            "data" => $airtime
+            ]);
+    }
     public function modifyairtime(Request $request, $id)
     {
 
@@ -51,6 +60,15 @@ class ServiceController extends Controller
 
     }
 
+
+    public function listlldata()
+    {
+        $data = tbl_serverconfig_data::all();
+        return response()->json([
+            "status" => 200,
+            "data" => $data
+            ]);
+    }
     public function modifydata(Request $request, $id)
     {
 
@@ -88,6 +106,15 @@ class ServiceController extends Controller
 
    
     }
+    
+    public function listalltvplan()
+    {
+        $tvplan = tbl_serverconfig_cabletv::all();
+        return response()->json([
+            "status" => 200,
+            "data" => $tvplan
+            ]);
+    }
 
     public function modifytvplan(Request $request, $id)
     {
@@ -124,6 +151,15 @@ class ServiceController extends Controller
             ]);
         }
       
+    }
+    
+    public function listelectricity()
+    {
+        $electricity = tbl_serverconfig_electricity::all();
+        return response()->json([
+            "status" => 200,
+            "data" => $electricity
+            ]);
     }
 
     public function modifyelectricity(Request $request, $id)
@@ -163,6 +199,15 @@ class ServiceController extends Controller
 
            
     }
+    
+    public function listbetting()
+    {
+        $betting = tbl_serverconfig_betting::all();
+        return response()->json([
+            "status" => 200,
+            "data" => $betting
+            ]);
+    }
 
     public function modifybetting(Request $request, $id)
     {
@@ -199,6 +244,15 @@ class ServiceController extends Controller
             ]);
         }
              
+    }
+    
+    public function listairtime2cash()
+    {
+        $airtime2cash = tbl_airtime2cash::all();
+        return response()->json([
+            "status" => 200,
+            "data" => $airtime2cash
+            ]);
     }
 
     public function modifyairtime2cash(Request $request, $id)
@@ -237,5 +291,35 @@ class ServiceController extends Controller
             ]);
         }
 
+    }
+    
+    public function ownwebsite(Request $request)
+    {
+        
+        // Validate input data
+        $request->validate([
+            'business_name' => 'required',
+            'business_logo_url' => 'required',
+            'website_address' => 'required',
+            'business_phone_no' => 'required',
+        ]);
+        
+         $ownWebsite = ownwebsite::create([
+            'business_name' => $request->input('business_name'),
+            'business_logo_url' => $request->input('business_logo_url'),
+            'website_address' => $request->input('website_address'),
+            'business_phone_no' => $request->input('business_phone_no'),
+        ]);
+        if($ownWebsite){
+             return response()->json([
+            'message' => 'Saved successfully',
+        ], 200);
+        
+        }else{
+             return response()->json([
+            'message' => 'Unable to Save',
+        ], 401);
+        }
+        
     }
 }

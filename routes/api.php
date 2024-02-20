@@ -41,15 +41,21 @@ Route::get('pendingtransaction', [TransactionController::class, 'pendingtransact
 Route::get('reversedtransaction', [TransactionController::class, 'reversedtransaction']);
 Route::post('searchtransaction', [TransactionController::class, 'searchtransaction']);
 Route::get('airtime2cash', [TransactionController::class, 'airtime2cash']);
+Route::post('airtime2cashstatus/{id}', [TransactionController::class, 'airtime2cashstatus']);
 Route::get('listvirtualacct', [TransactionController::class, 'listvirtualacct']);
+Route::post('deactivateacct/{id}', [TransactionController::class, 'deactivateacct']);
+
 Route::get('activeuser', [TransactionController::class, 'activeuser']);
 Route::get('dormantuser', [TransactionController::class, 'dormantuser']);
 Route::post('totalwalletcharge', [TransactionController::class, 'totalwalletcharge']);
+Route::get('totalcharge', [TransactionController::class, 'totalcharge']);
 Route::post('totalwalletfund', [TransactionController::class, 'totalwalletfund']);
+Route::get('totalfund', [TransactionController::class, 'totalfund']);
 Route::get('totalsumtransaction', [TransactionController::class, 'totalsumtransaction']);
 Route::get('totalcounttransaction', [TransactionController::class, 'totalcounttransaction']);
 Route::get('transactiontype', [TransactionController::class, 'transactiontype']);
 Route::post('referandearn', [TransactionController::class, 'referandearn']);
+Route::get('referelist', [TransactionController::class, 'referelist']);
 
 //service modules
 
@@ -66,9 +72,13 @@ Route::get('listelectricity', [ServiceController::class, 'listelectricity']);
 Route::get('listbetting', [ServiceController::class, 'listbetting']);
 Route::get('listairtime2cash', [ServiceController::class, 'listairtime2cash']);
 
+
 //report modules
 
-Route::get('dailyreport', [ReportController::class, 'getdailyreport']);
-Route::get('monthlyreport', [ReportController::class, 'getmonthlyreport']);
-Route::get('yearlyreport', [ReportController::class, 'getyearlyreport']);
+Route::post('dailyreport', [ReportController::class, 'getdailyreport']);
+Route::post('monthlyreport', [ReportController::class, 'getmonthlyreport']);
+Route::post('yearlyreport', [ReportController::class, 'getyearlyreport']);
+
+//own a website
+Route::post('ownwebsite', [ServiceController::class, 'ownwebsite']);
 });

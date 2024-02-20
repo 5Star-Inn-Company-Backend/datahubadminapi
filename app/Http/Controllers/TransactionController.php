@@ -41,9 +41,14 @@ class TransactionController extends Controller
                 $pendingTransactions = transaction::where('status', 0)->get();
 
                 if ($pendingTransactions->isEmpty()) {
-                    return response()->json(['No pending transactions']);
+                    return response()->json([
+                       'data' => $pendingTransactions,
+                        'message' => 'No pending transactions'
+                        ]);
                 } else {
-                    return response()->json(['pending_transactions' => $pendingTransactions]);
+                    return response()->json([
+                        'data' => $pendingTransactions
+                        ],200);
                 }
             } else {
                 return response()->json([
@@ -94,8 +99,7 @@ class TransactionController extends Controller
 
                 $searchCriteria = $request->input('search');
 
-                $searchResult = Transaction::where('title', 'like', '%' . $searchCriteria . '%')
-                    ->get();
+                $searchResult = Transaction::where('reference', 'like', '%' . $searchCriteria . '%')->orwhere('title', 'like', '%' . $searchCriteria . '%')->orwhere('recipient', 'like', '%' . $searchCriteria . '%')->get();
 
                 return response()->json(['search_result' => $searchResult]);
             } else {
@@ -117,11 +121,19 @@ class TransactionController extends Controller
     {
         if (Auth::check()) {
             if (Auth::user()->role_id == 1) {
-                $airtime2cash = tbl_airtime2cash::all();
+                $airtime2cash = tbl_airtime2cash::with('user')->get();
                 if ($airtime2cash->isEmpty()) {
                     return response()->json(['No airtime2cashs']);
                 } else {
-                    return response()->json(['airtime2cashs' => $airtime2cash]);
+                     $airtime = $airtime2cash->map(function ($item) {
+                            return [
+                                    // 'user_email' => $item->user->email,
+                                    // 'user_phone' => $item->user->phone,
+                                    'airtime2cash' => $item,
+                                ];
+        });
+
+        return response()->json(['airtime2cashs' => $airtime]);
                 }
             } else {
                 return response()->json([
@@ -135,6 +147,55 @@ class TransactionController extends Controller
                 "message" => "Unauthenticated"
             ]);
         }
+    }
+    
+    public function airtime2cashstatus(Request $request, $id)
+    {
+         if (Auth::check()) {
+            if (Auth::user()->role_id == 1) {
+                 try {
+              
+                // Validate the incoming request 
+            $request->validate(['status' => 'required']);
+            
+            $acct = tbl_airtime2cash::find($id);
+            if(!$acct){
+                return response()->json(['message' => 'Id not found'],200);
+            }
+            
+            $status = $request->input('status');
+            
+            if($status == '1'){
+               $acct->status = 'Successful';
+               
+                $acct->save();
+            }elseif($status == '2'){
+                 $acct->status = 'Pending';
+                 
+                $acct->save();
+            }elseif($status == '0'){
+                $acct->status = 'Failed';
+                 
+                $acct->save();
+            }
+
+        return response()->json(['message' => 'Airtime2cash status updated successfully'], 200);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Failed to update Airtime2cash status'], 500);
+    }
+            } else {
+                return response()->json([
+                    "status" => "401",
+                    "message" => "You are not Authorize to carry out this action."
+                ]);
+            }
+        } else {
+            return response()->json([
+                "status" => "200",
+                "message" => "Unauthenticated"
+            ]);
+        }
+                
     }
 
     public function listvirtualacct()
@@ -164,6 +225,34 @@ class TransactionController extends Controller
             ]);
         }
     }
+    
+    public function deactivateacct(Request $request, $id)
+    {
+        
+            try {
+              
+                // Validate the incoming request 
+            $request->validate(['status' => 'required']);
+            
+            $acct = virtual_acct::find($id);
+            
+            $status = $request->input('status');
+            
+            if($status == '0'){
+               $acct->status = 'deactivate';
+               
+                $acct->save();
+            }else{
+                 $acct->status = 'active';
+                 
+                $acct->save();
+            }
+
+        return response()->json(['message' => 'Account status updated successfully'], 200);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Failed to update account status'], 500);
+    }
+    }
 
     public function activeuser()
     {
@@ -174,8 +263,16 @@ class TransactionController extends Controller
                 $currentMonth = Carbon::now();
 
                 $activeUsers = Transaction::whereBetween('created_at', [$lastMonth, $currentMonth])->get();
+                $userDetails = [];
+                 foreach ($activeUsers as $transaction) {
+            $userId = $transaction->user_id;
+            $userDetails = User::find($userId);
+            
+                 }
 
-                return response()->json(['active_users' => $activeUsers]);
+                return response()->json([
+                    'active_users' =>  $userDetails
+                    ]);
             } else {
                 return response()->json([
                     "status" => "401",
@@ -190,30 +287,44 @@ class TransactionController extends Controller
         }
     }
 
-    public function dormantuser()
+   public function dormantuser()
     {
-        if (Auth::check()) {
-            if (Auth::user()->role_id == 1) {
-                // Fetch dormant users (not created between current month and last month)
-                $lastMonth = Carbon::now()->subMonth();
-                $currentMonth = Carbon::now();
+    if (Auth::check()) {
+        if (Auth::user()->role_id == 1) {
+            // Fetch dormant users (not created between current month and last month)
+            $lastMonth = Carbon::now()->subMonth();
+            $currentMonth = Carbon::now();
 
-                $dormantUsers = Transaction::whereNotBetween('created_at', [$lastMonth, $currentMonth])->get();
+            $dormantUsersTransactions = Transaction::whereNotBetween('created_at', [$lastMonth, $currentMonth])->get();
+            
+            $dormantUsers = [];
 
-                return response()->json(['dormant_users' => $dormantUsers]);
-            } else {
-                return response()->json([
-                    "status" => "401",
-                    "message" => "You are not allowed to view all users."
-                ]);
+            foreach ($dormantUsersTransactions as $transaction) {
+                $userId = $transaction->user_id;
+                $userDetails = User::find($userId);
+
+                // Store user details in the array
+                $dormantUsers[] = [
+                    // 'transaction_details' => $transaction,
+                    'user_details' => $userDetails,
+                ];
             }
+
+            return response()->json(['dormant_users' => $dormantUsers]);
         } else {
             return response()->json([
-                "status" => "200",
-                "message" => "Unauthenticated"
+                "status" => "401",
+                "message" => "You are not allowed to view all users."
             ]);
         }
+    } else {
+        return response()->json([
+            "status" => "200",
+            "message" => "Unauthenticated"
+        ]);
     }
+}
+
 
     public function totalwalletcharge(Request $request)
     {
@@ -246,6 +357,28 @@ class TransactionController extends Controller
             ]);
         }
     }
+    
+    public function totalcharge()
+    {
+        if (Auth::check()) {
+            if (Auth::user()->role_id == 1) {
+
+                $totalWalletCharge = Transaction::where('type', 'debit')->sum('amount');
+
+                return response()->json(['total_wallet_charge' => $totalWalletCharge]);
+            } else {
+                return response()->json([
+                    "status" => "401",
+                    "message" => "You are not allowed to view all users."
+                ]);
+            }
+        } else {
+            return response()->json([
+                "status" => "200",
+                "message" => "Unauthenticated"
+            ]);
+        }
+    }
 
     public function totalwalletfund(Request $request)
     {
@@ -263,6 +396,28 @@ class TransactionController extends Controller
                     ->selectRaw('sum(amount) as total_funding, created_at')
                     ->groupBy('created_at')
                     ->get();
+
+                return response()->json(['total_wallet_funding' => $totalWalletFunding]);
+            } else {
+                return response()->json([
+                    "status" => "401",
+                    "message" => "You are not allowed to view all users."
+                ]);
+            }
+        } else {
+            return response()->json([
+                "status" => "200",
+                "message" => "Unauthenticated"
+            ]);
+        }
+    }
+    
+    public function totalfund()
+    {
+         if (Auth::check()) {
+            if (Auth::user()->role_id == 1) {
+
+                $totalWalletFunding = Transaction::where('type', 'credit')->sum('amount');
 
                 return response()->json(['total_wallet_funding' => $totalWalletFunding]);
             } else {
@@ -326,9 +481,10 @@ class TransactionController extends Controller
     {
         if (Auth::check()) {
             if (Auth::user()->role_id == 1) {
-                $transactionTypes = Transaction::pluck('title')->unique()->toArray();
+                $transactionTypes = Transaction::pluck('title');
 
-                return response()->json(['transaction_types' => $transactionTypes]);
+                return response()->json([
+                    'transaction_types' => $transactionTypes]);
             } else {
                 return response()->json([
                     "status" => "401",
@@ -345,24 +501,51 @@ class TransactionController extends Controller
 
     public function referandearn(Request $request)
     {
-
+       
         if (Auth::check()) {
+             
             if (Auth::user()->role_id == 1) {
-                $request->validate([
-                    'refer' => 'required',
-                    'amount_to_earn' => 'required|numeric',
-                ]);
-
-                referandearn::create([
-                    'refer' => $request->input('refer'),
-                    'amount_to_earn' => $request->input('amount_to_earn'),
-                ]);
+                
+            // Validate the incoming request 
+        $request->validate([
+            'referer_phone' => 'required',
+            'amount_to_earn' => 'required',
+        ]);
+                
+                
+                $refer = new referandearn();
+                $refer->referer_phone = $request->referer_phone;
+                $refer->amount_to_earn = $request->amount_to_earn;
+                //  dd($refer->referer_phone);
+                $refer->save();
 
                 return response()->json(['message' => 'Refer and Earn entry added successfully']);
             } else {
                 return response()->json([
                     "status" => "401",
                     "message" => "You are not allowed to view all users."
+                ]);
+            }
+        } else {
+            return response()->json([
+                "status" => "200",
+                "message" => "Unauthenticated"
+            ]);
+        }
+    }
+    
+    public function referelist()
+    {
+        if (Auth::check()) {
+            if (Auth::user()->role_id == 1) {
+                $referes = User::where('referer_id', null)->get();
+
+                return response()->json([
+                    'Referes' => $referes]);
+            } else {
+                return response()->json([
+                    "status" => "401",
+                    "message" => "You are not allowed to view all Referes"
                 ]);
             }
         } else {
