@@ -10,6 +10,7 @@ use App\Models\tbl_serverconfig_airtime;
 use App\Models\tbl_serverconfig_betting;
 use App\Models\tbl_serverconfig_cabletv;
 use App\Models\tbl_serverconfig_electricity;
+use App\Models\tbl_serverconfig_airtime2cash;
 use App\Models\ownwebsite;
 
 class ServiceController extends Controller
@@ -248,7 +249,7 @@ class ServiceController extends Controller
     
     public function listairtime2cash()
     {
-        $airtime2cash = tbl_airtime2cash::all();
+        $airtime2cash = tbl_serverconfig_airtime2cash::all();
         return response()->json([
             "status" => 200,
             "data" => $airtime2cash
