@@ -56,6 +56,8 @@ Route::get('totalcounttransaction', [TransactionController::class, 'totalcounttr
 Route::get('transactiontype', [TransactionController::class, 'transactiontype']);
 Route::post('referandearn', [TransactionController::class, 'referandearn']);
 Route::get('referelist', [TransactionController::class, 'referelist']);
+//modify funding config
+Route::post('modifyconfig/{id}',[TransactionController::class, 'modifyconfig']);
 
 //service modules
 
@@ -82,3 +84,4 @@ Route::post('yearlyreport', [ReportController::class, 'getyearlyreport']);
 //own a website
 Route::post('ownwebsite', [ServiceController::class, 'ownwebsite']);
 });
+

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\funding_config;
 use App\Models\User;
 use App\Models\transaction;
 use App\Models\referandearn;
@@ -554,5 +555,43 @@ class TransactionController extends Controller
                 "message" => "Unauthenticated"
             ]);
         }
+    }
+
+    public function modifyconfig(Request $request, $id)
+    {
+        if (Auth::check()) {
+            if (Auth::user()->role_id == 1) {
+               // Check if the user exists
+        $funding = funding_config::find($id);
+
+        if (!$funding) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        // Get the fields and values from the request
+        $updateFields = $request->only(['name', 'charges', 'description', 'ppkey']);
+
+        // Update the user details based on the specified fields
+        $funding->fill($updateFields);
+        if ($funding->save()) {
+            // Return a JSON response with the modified user details
+            return response()->json(['message' => 'Funding config modified successfully', 'user' => $funding]);
+        } else {
+            // Return a JSON response with the modified user details
+            return response()->json(['message' => 'Unable to Modify User details']);
+        }
+            }else{
+                return response()->json([
+                    "status" => "401",
+                    "message" => "You are not allowed to view all users."
+                ]);
+            }
+        }else{
+            return response()->json([
+                "status" => "200",
+                "message" => "Unauthenticated"
+            ]);
+        }
+
     }
 }
