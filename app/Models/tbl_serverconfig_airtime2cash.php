@@ -8,4 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class tbl_serverconfig_airtime2cash extends Model
 {
     use HasFactory;
+    
+    protected $table = 'tbl_serverconfig_airtime2cashs';
+    
+    protected $fillable = [
+        'network',
+        'number',
+        'discount',
+        'status'
+        
+        ];
 }

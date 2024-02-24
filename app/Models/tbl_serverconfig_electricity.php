@@ -10,4 +10,13 @@ class tbl_serverconfig_electricity extends Model
     use HasFactory;
 
     protected $table = 'tbl_serverconfig_electricitys';
+    
+    protected $fillable = [
+        'name',
+        'code',
+        'code10',
+        'discount',
+        'status',
+        'server'
+        ];
 }

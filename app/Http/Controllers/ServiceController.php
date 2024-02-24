@@ -41,11 +41,19 @@ class ServiceController extends Controller
             return response()->json(['error' => 'Id not found'], 404);
         }
 
-        // Modify the status to 0 or 1
-        $airtime->status = $request->input('status');
+            // Get the fields and values from the request
+                $updateFields = $request->only(['network', 'discount', 'server', 'status']);
 
-        // Return a JSON response indicating that it has been modified
-        return response()->json(['message' => 'You have successfully modified Airtime plan', 'user' =>  $airtime]);
+                // Update the user details based on the specified fields
+                $airtime->fill($updateFields);
+                
+                if($airtime->save())
+                {
+                       // Return a JSON response indicating that it has been modified
+                    return response()->json(['message' => 'You have successfully modified Airtime plan', 'user' =>  $airtime]);
+                }
+
+     
             }else{
                 return response()->json([
                     "status" => "401",
@@ -75,10 +83,7 @@ class ServiceController extends Controller
 
         if (Auth::check()) {
             if (Auth::user()->role_id == 1) {
-                 // Validate the request parameters
-        $request->validate([
-            'status' => 'required',
-        ]);
+
 
         // Check if the id exists
         $data = tbl_serverconfig_data::find($id);
@@ -87,11 +92,17 @@ class ServiceController extends Controller
             return response()->json(['error' => 'Id not found'], 404);
         }
 
-        // Modify the status to 0 or 1
-        $data->status = $request->input('status');
+            // Get the fields and values from the request
+                $updateFields = $request->only(['name', 'coded', '	server', 'category', 'amount', 'network', 'network_code','dataplan','plan_id','price','status']);
 
-        // Return a JSON response indicating that it has been modified
-        return response()->json(['message' => 'You have successfully modified Data plan', 'Dataplan' =>  $data]);
+                // Update the user details based on the specified fields
+                $data->fill($updateFields);
+                  if ($data->save()) {
+                    // Return a JSON response indicating that it has been modified
+                return response()->json(['message' => 'You have successfully modified Data plan', 'Dataplan' =>  $data]);
+                  }else{
+                      return response()->json(['message' => 'Unable to modified Data plan']);
+                  }
             }else{
                 return response()->json([
                     "status" => "401",
@@ -134,11 +145,16 @@ class ServiceController extends Controller
             return response()->json(['error' => 'Id not found'], 404);
         }
 
-        // Modify the status to 0 or 1
-        $tvplan->status = $request->input('status');
+                // Get the fields and values from the request
+                $updateFields = $request->only(['type','name', 'coded', 'code','price', 'discount', 'status', 'server']);
 
-        // Return a JSON response indicating that it has been modified
-        return response()->json(['message' => 'You have successfully modified Tv plan', 'Tvplans' =>  $tvplan]);
+                // Update the user details based on the specified fields
+                $tvplan->fill($updateFields);
+                if($tvplan->save()){
+                       // Return a JSON response indicating that it has been modified
+                return response()->json(['message' => 'You have successfully modified Tv plan', 'Tvplans' =>  $tvplan]);
+                }
+     
             }else{
                 return response()->json([
                     "status" => "401",
@@ -163,43 +179,44 @@ class ServiceController extends Controller
             ]);
     }
 
-    public function modifyelectricity(Request $request, $id)
+   public function modifyelectricity(Request $request, $id)
     {
 
         if (Auth::check()) {
             if (Auth::user()->role_id == 1) {
-               // Validate the request parameters
-               $request->validate([
-                'status' => 'required',
-            ]);
-    
-            // Check if the id exists
-            $electricity = tbl_serverconfig_electricity::find($id);
-    
-            if (!$electricity) {
-                return response()->json(['error' => 'Id not found'], 404);
-            }
-    
-            // Modify the status to 0 or 1
-            $electricity->status = $request->input('status');
-    
-            // Return a JSON response indicating that it has been modified
-            return response()->json(['message' => 'You have successfully modified Electricity plan', 'Electricity plans' =>  $electricity]);
-            }else{
+                // Check if the id exists
+                $electricity = tbl_serverconfig_electricity::find($id);
+
+                if (!$electricity) {
+                    return response()->json(['error' => 'Id not found'], 404);
+                }
+
+                // Get the fields and values from the request
+                $updateFields = $request->only(['name', 'code', 'code10', 'discount', 'status', 'server']);
+
+                // Update the user details based on the specified fields
+                $electricity->fill($updateFields);
+                if ($electricity->save()) {
+                    // Return a JSON response with the modified user details
+                    return response()->json(['message' => 'Electricity details modified successfully', 'Electricity' =>  $electricity]);
+                } else {
+                    // Return a JSON response with the modified user details
+                    return response()->json(['message' => 'Unable to Electricity details']);
+                }
+            } else {
                 return response()->json([
                     "status" => "401",
                     "message" => "You are not allowed to view all users."
                 ]);
             }
-        }else{
+        } else {
             return response()->json([
                 "status" => "200",
                 "message" => "Unauthenticated"
             ]);
         }
-
-           
     }
+
     
     public function listbetting()
     {
@@ -221,17 +238,25 @@ class ServiceController extends Controller
             ]);
     
             // Check if the id exists
-            $electricity = tbl_serverconfig_betting::find($id);
+            $betting = tbl_serverconfig_betting::find($id);
     
-            if (!$electricity) {
+            if (!$betting) {
                 return response()->json(['error' => 'Id not found'], 404);
             }
     
-            // Modify the status to 0 or 1
-            $electricity->status = $request->input('status');
+             // Get the fields and values from the request
+                $updateFields = $request->only(['name', 'code', 'discount', 'status', 'server']);
+
+                // Update the user details based on the specified fields
+                $betting->fill($updateFields);
+                
+                if($betting->save())
+                {
+                       // Return a JSON response indicating that it has been modified
+                return response()->json(['message' => 'You have successfully modified Betting plan', 'Betting plans' =>  $betting]);  
+                }
     
-            // Return a JSON response indicating that it has been modified
-            return response()->json(['message' => 'You have successfully modified Betting plan', 'Betting plans' =>  $electricity]);
+       
             }else{
                 return response()->json([
                     "status" => "401",
@@ -268,17 +293,25 @@ class ServiceController extends Controller
             ]);
     
             // Check if the id exists
-            $airtime2cash = tbl_airtime2cash::find($id);
+            $airtime2cash = tbl_serverconfig_airtime2cash::find($id);
     
             if (!$airtime2cash) {
                 return response()->json(['error' => 'Id not found'], 404);
             }
     
-            // Modify the status to 0 or 1
-            $airtime2cash->status = $request->input('status');
+          // Get the fields and values from the request
+                $updateFields = $request->only(['network', 'number', 'discount', 'status']);
+
+                // Update the user details based on the specified fields
+                $airtime2cash->fill($updateFields);
+                
+                if($airtime2cash->save())
+                {
+                             // Return a JSON response indicating that it has been modified
+                return response()->json(['message' => 'You have successfully modified Airtime2cash', 'Airtime2cash' =>  $airtime2cash]);   
+                }
     
-            // Return a JSON response indicating that it has been modified
-            return response()->json(['message' => 'You have successfully modified Airtime2cash', 'Airtime2cash' =>  $airtime2cash]);
+
             }else{
                 return response()->json([
                     "status" => "401",
