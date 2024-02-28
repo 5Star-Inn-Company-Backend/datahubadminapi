@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MCDController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -83,5 +84,14 @@ Route::post('yearlyreport', [ReportController::class, 'getyearlyreport']);
 
 //own a website
 Route::post('ownwebsite', [ServiceController::class, 'ownwebsite']);
+
+Route::get('mcd-balance', [MCDController::class, 'balance']);
+Route::get('mcd-banklist', [MCDController::class, 'banklist']);
+Route::post('mcd-verifyBank', [MCDController::class, 'verifyBank']);
+Route::post('mcd-makeWithdrawal', [MCDController::class, 'makeWithdrawal']);
+Route::get('mcd-withdrawals', [MCDController::class, 'withdrawalList']);
+Route::get('mcd-transactions', [MCDController::class, 'transactionList']);
+Route::get('mcd-commissions', [MCDController::class, 'transactionList']);
+
 });
 
