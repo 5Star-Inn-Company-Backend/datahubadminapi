@@ -59,6 +59,7 @@ Route::post('referandearn', [TransactionController::class, 'referandearn']);
 Route::get('referelist', [TransactionController::class, 'referelist']);
 //modify funding config
 Route::post('modifyconfig/{id}',[TransactionController::class, 'modifyconfig']);
+Route::get('listconfig', [TransactionController::class, 'listconfig']);
 
 //service modules
 
