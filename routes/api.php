@@ -91,7 +91,7 @@ Route::post('mcd-verifyBank', [MCDController::class, 'verifyBank']);
 Route::post('mcd-makeWithdrawal', [MCDController::class, 'makeWithdrawal']);
 Route::get('mcd-withdrawals', [MCDController::class, 'withdrawalList']);
 Route::get('mcd-transactions', [MCDController::class, 'transactionList']);
-Route::get('mcd-commissions', [MCDController::class, 'transactionList']);
+Route::get('mcd-commissions', [MCDController::class, 'commissionsList']);
 
 });
 
