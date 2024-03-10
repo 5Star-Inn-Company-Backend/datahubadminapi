@@ -38,6 +38,7 @@ Route::get('usertransaction/{userid}', [UserController::class, 'usertransaction'
 
 //transaction modules
 Route::get('listalltransaction', [TransactionController::class, 'listalltransaction']);
+Route::post('edittransaction/{id}', [TransactionController::class, 'edittransaction']);
 Route::get('pendingtransaction', [TransactionController::class, 'pendingtransaction']);
 Route::get('reversedtransaction', [TransactionController::class, 'reversedtransaction']);
 Route::post('searchtransaction', [TransactionController::class, 'searchtransaction']);

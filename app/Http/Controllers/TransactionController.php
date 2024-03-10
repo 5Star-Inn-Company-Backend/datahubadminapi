@@ -35,6 +35,43 @@ class TransactionController extends Controller
         }
     }
 
+    public function edittransaction(Request $request,$id)
+    {
+        if (Auth::check()) {
+            if (Auth::user()->role_id == 1) {
+               // Check if the user exists
+        $transaction = transaction::find($id);
+
+        if (!$transaction) {
+            return response()->json(['error' => 'Id not found'], 404);
+        }
+
+        // Get the fields and values from the request
+        $updateFields = $request->only(['status']);
+
+        // Update the user details based on the specified fields
+        $transaction->fill($updateFields);
+        if ($transaction->save()) {
+            // Return a JSON response with the modified user details
+            return response()->json(['message' => 'Transaction status updated successfully!', 'user' => $transaction]);
+        } else {
+            // Return a JSON response with the modified user details
+            return response()->json(['message' => 'Unable to Modify transactiob status']);
+        }
+            }else{
+                return response()->json([
+                    "status" => "401",
+                    "message" => "You are not allowed to view all users."
+                ]);
+            }
+        }else{
+            return response()->json([
+                "status" => "200",
+                "message" => "Unauthenticated"
+            ]);
+        }
+    }
+
     public function pendingtransaction()
     {
         if (Auth::check()) {
