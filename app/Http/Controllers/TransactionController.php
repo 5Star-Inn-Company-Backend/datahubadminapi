@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\funding_config;
 use App\Models\User;
+use App\Models\Wallet;
 use App\Models\transaction;
 use App\Models\referandearn;
 use App\Models\virtual_acct;
 use Illuminate\Http\Request;
+use App\Models\funding_config;
 use Illuminate\Support\Carbon;
 use App\Models\tbl_airtime2cash;
 use Illuminate\Support\Facades\Auth;
@@ -35,36 +36,36 @@ class TransactionController extends Controller
         }
     }
 
-    public function edittransaction(Request $request,$id)
+    public function edittransaction(Request $request, $id)
     {
         if (Auth::check()) {
             if (Auth::user()->role_id == 1) {
-               // Check if the user exists
-        $transaction = transaction::find($id);
+                // Check if the user exists
+                $transaction = transaction::find($id);
 
-        if (!$transaction) {
-            return response()->json(['error' => 'Id not found'], 404);
-        }
+                if (!$transaction) {
+                    return response()->json(['error' => 'Id not found'], 404);
+                }
 
-        // Get the fields and values from the request
-        $updateFields = $request->only(['status']);
+                // Get the fields and values from the request
+                $updateFields = $request->only(['status']);
 
-        // Update the user details based on the specified fields
-        $transaction->fill($updateFields);
-        if ($transaction->save()) {
-            // Return a JSON response with the modified user details
-            return response()->json(['message' => 'Transaction status updated successfully!', 'user' => $transaction]);
-        } else {
-            // Return a JSON response with the modified user details
-            return response()->json(['message' => 'Unable to Modify transactiob status']);
-        }
-            }else{
+                // Update the user details based on the specified fields
+                $transaction->fill($updateFields);
+                if ($transaction->save()) {
+                    // Return a JSON response with the modified user details
+                    return response()->json(['message' => 'Transaction status updated successfully!', 'user' => $transaction]);
+                } else {
+                    // Return a JSON response with the modified user details
+                    return response()->json(['message' => 'Unable to Modify transactiob status']);
+                }
+            } else {
                 return response()->json([
                     "status" => "401",
                     "message" => "You are not allowed to view all users."
                 ]);
             }
-        }else{
+        } else {
             return response()->json([
                 "status" => "200",
                 "message" => "Unauthenticated"
@@ -126,6 +127,41 @@ class TransactionController extends Controller
             ]);
         }
     }
+
+    public function reversetran(Request $request)
+    {
+        $reference = $request->input('reference');
+        $transaction = Transaction::where('reference', $reference)->first();
+
+        if ($transaction) {
+            $user_id = $transaction->user_id;
+            $amount = $transaction->amount;
+            $transaction_balance = $transaction->prev_balance;
+
+            $wallet = Wallet::where('user_id', $user_id)->first();
+
+            if ($wallet) {
+                $newbalance = $wallet->balance + $amount; // Add the amount back to the balance
+                $wallet->update([
+                    'balance' => $newbalance,
+                    'status' => 4, // Update the status to 4 indicating reversal
+                ]);
+
+                $transaction->update([
+                    'status' => 4,
+                    'amount' => 0,
+                    'new_balance' => $transaction_balance,
+                ]);
+
+                return response()->json(['message' => 'Transaction reversed successfully']);
+            } else {
+                return response()->json(['message' => 'Wallet not found for the user'], 404);
+            }
+        } else {
+            return response()->json(['message' => 'Transaction not found'], 404);
+        }
+    }
+
 
     public function searchtransaction(Request $request)
     {
@@ -596,12 +632,13 @@ class TransactionController extends Controller
 
     public function listconfig()
     {
-         if (Auth::check()) {
+        if (Auth::check()) {
             if (Auth::user()->role_id == 1) {
                 $config = funding_config::all();
 
                 return response()->json([
-                    'data' => $config],200);
+                    'data' => $config
+                ], 200);
             } else {
                 return response()->json([
                     "status" => "401",
