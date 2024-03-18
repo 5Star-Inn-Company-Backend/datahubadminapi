@@ -35,6 +35,8 @@ Route::post('searchuser', [UserController::class, 'searchusers']);
 Route::post('modifyuser/{userid}', [UserController::class, 'modifyuser']);
 Route::post('suspenduser/{userid}', [UserController::class, 'suspenduser']);
 Route::get('usertransaction/{userid}', [UserController::class, 'usertransaction']);
+Route::post('credituser', [UserController::class, 'credituser']);
+Route::post('debituser', [UserController::class, 'debituser']);
 
 //transaction modules
 Route::get('listalltransaction', [TransactionController::class, 'listalltransaction']);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Wallet;
 use App\Models\transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -15,18 +16,18 @@ class UserController extends Controller
 
     public function register(Request $request)
     {
-         $validator = Validator::make($request->all(), [
-        'email' => 'required|email|unique:users',
-        'phone' => 'required|unique:users',
-        // Add other validation rules as needed
-    ]);
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|unique:users',
+            'phone' => 'required|unique:users',
+            // Add other validation rules as needed
+        ]);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'status' => false,
-            'message' => $validator->errors(),
-        ], 422);
-    }
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors(),
+            ], 422);
+        }
         $user = new User();
         $user->firstname = $request->firstname;
         $user->lastname = $request->lastname;
@@ -69,7 +70,7 @@ class UserController extends Controller
         if (Auth::attempt(['email' => $email, 'password' => $password])) {
             $user = $request->user();
 
-            if($user->role_id != 1){
+            if ($user->role_id != 1) {
                 return response()->json([
                     "status" => false,
                     "message" => "Unauthorized credentials",
@@ -131,37 +132,36 @@ class UserController extends Controller
         if (Auth::check()) {
             if (Auth::user()->role_id == 1) {
                 // Get the search term from the request
-        $searchTerm = $request->input('search');
+                $searchTerm = $request->input('search');
 
-        // Search users based on the criteria (you can modify this query based on your requirements)
-        $users = User::where('firstname', 'like', '%' . $searchTerm . '%')->orwhere('lastname', 'like', '%' . $searchTerm . '%')->get();
+                // Search users based on the criteria (you can modify this query based on your requirements)
+                $users = User::where('firstname', 'like', '%' . $searchTerm . '%')->orwhere('lastname', 'like', '%' . $searchTerm . '%')->get();
 
-        // Extract names from the search result
-        // Extract names from the search result
-        $names = $users->map(function ($user) {
-            return $user->firstname . ' ' . $user->lastname;
-        });
+                // Extract names from the search result
+                // Extract names from the search result
+                $names = $users->map(function ($user) {
+                    return $user->firstname . ' ' . $user->lastname;
+                });
 
-        // $firstNames = $users->pluck('firstname');
-        // $lastName = $users->pluck('lastname');
+                // $firstNames = $users->pluck('firstname');
+                // $lastName = $users->pluck('lastname');
 
-        // Return a JSON response with the search result
-        return response()->json([
-            'search_result' => $users,
-        ]);
-            }else{
+                // Return a JSON response with the search result
+                return response()->json([
+                    'search_result' => $users,
+                ]);
+            } else {
                 return response()->json([
                     "status" => "401",
                     "message" => "You are not allowed to view all users."
                 ]);
             }
-        }else{
+        } else {
             return response()->json([
                 "status" => "200",
                 "message" => "Unauthenticated"
             ]);
         }
-
     }
 
     // Modify user details
@@ -170,38 +170,37 @@ class UserController extends Controller
 
         if (Auth::check()) {
             if (Auth::user()->role_id == 1) {
-               // Check if the user exists
-        $user = User::find($userid);
+                // Check if the user exists
+                $user = User::find($userid);
 
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
-        }
+                if (!$user) {
+                    return response()->json(['error' => 'User not found'], 404);
+                }
 
-        // Get the fields and values from the request
-        $updateFields = $request->only(['firstname', 'lastname', 'address', 'phone', 'gender', 'dob', 'email', 'bvn', 'bank_code', 'account_name', 'account_number']);
+                // Get the fields and values from the request
+                $updateFields = $request->only(['firstname', 'lastname', 'address', 'phone', 'gender', 'dob', 'email', 'bvn', 'bank_code', 'account_name', 'account_number']);
 
-        // Update the user details based on the specified fields
-        $user->fill($updateFields);
-        if ($user->save()) {
-            // Return a JSON response with the modified user details
-            return response()->json(['message' => 'User details modified successfully', 'user' => $user]);
-        } else {
-            // Return a JSON response with the modified user details
-            return response()->json(['message' => 'Unable to Modify User details']);
-        }
-            }else{
+                // Update the user details based on the specified fields
+                $user->fill($updateFields);
+                if ($user->save()) {
+                    // Return a JSON response with the modified user details
+                    return response()->json(['message' => 'User details modified successfully', 'user' => $user]);
+                } else {
+                    // Return a JSON response with the modified user details
+                    return response()->json(['message' => 'Unable to Modify User details']);
+                }
+            } else {
                 return response()->json([
                     "status" => "401",
                     "message" => "You are not allowed to view all users."
                 ]);
             }
-        }else{
+        } else {
             return response()->json([
                 "status" => "200",
                 "message" => "Unauthenticated"
             ]);
         }
-
     }
 
     // Suspend user
@@ -209,45 +208,44 @@ class UserController extends Controller
     {
         if (Auth::check()) {
             if (Auth::user()->role_id == 1) {
-             // Validate the request parameters
-        $request->validate([
-            'reason' => 'nullable|string',
-        ]);
+                // Validate the request parameters
+                $request->validate([
+                    'reason' => 'nullable|string',
+                ]);
 
-        // Check if the user exists
-        $user = User::find($userId);
+                // Check if the user exists
+                $user = User::find($userId);
 
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
-        }
+                if (!$user) {
+                    return response()->json(['error' => 'User not found'], 404);
+                }
 
-        // Suspend the user by updating the status to 0
-        $user->status = 0;
+                // Suspend the user by updating the status to 0
+                $user->status = 0;
 
-        // Store the reason for suspension if provided
-        $reason = $request->input('reason');
-        if ($reason) {
-            $user->status_reason = $reason;
-        }
+                // Store the reason for suspension if provided
+                $reason = $request->input('reason');
+                if ($reason) {
+                    $user->status_reason = $reason;
+                }
 
-        // Save the changes
-        $user->save();
+                // Save the changes
+                $user->save();
 
-        // Return a JSON response indicating the user has been suspended
-        return response()->json(['message' => 'User suspended successfully', 'user' => $user]);
-            }else{
+                // Return a JSON response indicating the user has been suspended
+                return response()->json(['message' => 'User suspended successfully', 'user' => $user]);
+            } else {
                 return response()->json([
                     "status" => "401",
                     "message" => "You are not allowed to view all users."
                 ]);
             }
-        }else{
+        } else {
             return response()->json([
                 "status" => "200",
                 "message" => "Unauthenticated"
             ]);
         }
-
     }
 
     // Retrieve user transactions
@@ -255,34 +253,99 @@ class UserController extends Controller
     {
         if (Auth::check()) {
             if (Auth::user()->role_id == 1) {
-             // Check if the user exists
-        $user = User::find($userid);
+                // Check if the user exists
+                $user = User::find($userid);
 
-        if (!$user || !$user->exists) {
-            return response()->json(['error' => 'User not found'], 404);
-        }
+                if (!$user || !$user->exists) {
+                    return response()->json(['error' => 'User not found'], 404);
+                }
 
-        // Retrieve transactions for the specific user
-        $transactions = Transaction::where('user_id', $userid)->get();
+                // Retrieve transactions for the specific user
+                $transactions = Transaction::where('user_id', $userid)->get();
 
-        if ($transactions->isEmpty()) {
-            return response()->json(['message' => 'User transactions not found'], 404);
-        }
+                if ($transactions->isEmpty()) {
+                    return response()->json(['message' => 'User transactions not found'], 404);
+                }
 
-        // Return a JSON response with user transactions
-        return response()->json(['user_id' => $userid, 'transactions' => $transactions]);
-            }else{
+                // Return a JSON response with user transactions
+                return response()->json(['user_id' => $userid, 'transactions' => $transactions]);
+            } else {
                 return response()->json([
                     "status" => "401",
                     "message" => "You are not allowed to view all users."
                 ]);
             }
-        }else{
+        } else {
             return response()->json([
                 "status" => "200",
                 "message" => "Unauthenticated"
             ]);
         }
+    }
 
+    public function credituser(Request $request)
+    {
+        // Validate input
+        $request->validate([
+            'email' => 'required',
+            'amount' => 'required|numeric',
+            'description' => 'required',
+        ]);
+
+        $user = User::where('id', Auth::user()->id)->pluck('id');
+        if ($user) {
+            // dd($user);
+            $wallet = Wallet::where('user_id', $user)->first();
+            if ($wallet) {
+                $balance =  $wallet->balance + $request->amount;
+                $wallet->update([
+                    'balance' => $balance
+                ]);
+                return response()->json(['message' => 'User credited successfully'], 200);
+            } else {
+                return response()->json([
+                    'message' => 'User Wallet not Found'
+
+                ]);
+            }
+        } else {
+            return response()->json([
+                'message' => 'User not Found'
+
+            ]);
+        }
+    }
+
+    public function debituser(Request $request)
+    {
+        // Validate input
+        $request->validate([
+            'email' => 'required',
+            'amount' => 'required|numeric',
+            'description' => 'required',
+        ]);
+
+        $user = User::where('id', Auth::user()->id)->pluck('id');
+        if ($user) {
+            // dd($user);
+            $wallet = Wallet::where('user_id', $user)->first();
+            if ($wallet) {
+                $balance =  $wallet->balance - $request->amount;
+                $wallet->update([
+                    'balance' => $balance
+                ]);
+                return response()->json(['message' => 'User Debited successfully'], 200);
+            } else {
+                return response()->json([
+                    'message' => 'User Wallet not Found'
+
+                ]);
+            }
+        } else {
+            return response()->json([
+                'message' => 'User not Found'
+
+            ]);
+        }
     }
 }
