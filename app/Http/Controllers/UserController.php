@@ -7,6 +7,7 @@ use App\Models\Wallet;
 use App\Models\transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -285,67 +286,92 @@ class UserController extends Controller
 
     public function credituser(Request $request)
     {
-        // Validate input
+
         $request->validate([
             'email' => 'required',
             'amount' => 'required|numeric',
             'description' => 'required',
         ]);
 
-        $user = User::where('id', Auth::user()->id)->pluck('id');
-        if ($user) {
-            // dd($user);
-            $wallet = Wallet::where('user_id', $user)->first();
-            if ($wallet) {
-                $balance =  $wallet->balance + $request->amount;
-                $wallet->update([
-                    'balance' => $balance
-                ]);
-                return response()->json(['message' => 'User credited successfully'], 200);
-            } else {
-                return response()->json([
-                    'message' => 'User Wallet not Found'
+        try {
 
-                ]);
+            $user = User::where('email', $request->email)->first();
+
+            if ($user) {
+                DB::transaction(function () use ($user, &$request) {
+                    $wallet = Wallet::where([['user_id', $user->id], ['name', 'wallet']])->first();
+                    if ($wallet) {
+                        $balance =  $wallet->balance + $request->amount;
+                        $wallet->update([
+                            'balance' => $balance
+                        ]);
+                        //Generate unique transaction reference
+                        $transactionReference = mt_rand(1000000000, 9999999999);
+                        Transaction::create([
+                            'user_id' => $user->id,
+                            'title' => 'Credit User',
+                            'amount' => $request->amount,
+                            'new_balance' => $request->amount,
+                            'status' => 1,
+                            'reference' => $transactionReference,
+                            'type' => 'credit',
+                        ]);
+                       return $transactionReference;
+                    } else {
+                        return response()->json([
+                            'message' => 'User Wallet not Found'
+                        ]);
+                    }
+                });
             }
-        } else {
-            return response()->json([
-                'message' => 'User not Found'
-
-            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()]);
         }
     }
 
     public function debituser(Request $request)
     {
-        // Validate input
         $request->validate([
             'email' => 'required',
             'amount' => 'required|numeric',
             'description' => 'required',
         ]);
 
-        $user = User::where('id', Auth::user()->id)->pluck('id');
-        if ($user) {
-            // dd($user);
-            $wallet = Wallet::where('user_id', $user)->first();
-            if ($wallet) {
-                $balance =  $wallet->balance - $request->amount;
-                $wallet->update([
-                    'balance' => $balance
-                ]);
-                return response()->json(['message' => 'User Debited successfully'], 200);
-            } else {
-                return response()->json([
-                    'message' => 'User Wallet not Found'
+        try {
 
-                ]);
+            $user = User::where('email', $request->email)->first();
+
+            if ($user) {
+                DB::transaction(function () use ($user, &$request) {
+                    $wallet = Wallet::where([['user_id', $user->id], ['name', 'wallet']])->first();
+                    if ($wallet) {
+                        $balance =  $wallet->balance - $request->amount;
+                        $wallet->update([
+                            'balance' => $balance
+                        ]);
+                        //Generate unique transaction reference
+                        $transactionReference = mt_rand(1000000000, 9999999999);
+                        Transaction::create([
+                            'user_id' => $user->id,
+                            'title' => 'Debit User',
+                            'amount' => $request->amount,
+                            'new_balance' => $request->amount,
+                            'status' => 1,
+                            'reference' => $transactionReference,
+                            'type' => 'debit',
+                        ]);
+                        return response()->json([
+                            'message' => 'User Debited successfully!!',
+                        ], 200);
+                    } else {
+                        return response()->json([
+                            'message' => 'User Wallet not Found'
+                        ]);
+                    }
+                });
             }
-        } else {
-            return response()->json([
-                'message' => 'User not Found'
-
-            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 }

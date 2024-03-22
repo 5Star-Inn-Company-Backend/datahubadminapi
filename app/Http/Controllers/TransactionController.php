@@ -127,7 +127,6 @@ class TransactionController extends Controller
             ]);
         }
     }
-
     public function reversetran(Request $request)
     {
         $reference = $request->input('reference');
@@ -138,18 +137,17 @@ class TransactionController extends Controller
             $amount = $transaction->amount;
             $transaction_balance = $transaction->prev_balance;
 
-            $wallet = Wallet::where('user_id', $user_id)->first();
+            // $wallet = Wallet::where('user_id', $user_id)->first();
+            $wallet=Wallet::where([['user_id',$user_id], ['name','wallet']])->first();
 
             if ($wallet) {
                 $newbalance = $wallet->balance + $amount; // Add the amount back to the balance
                 $wallet->update([
                     'balance' => $newbalance,
-                    'status' => 4, // Update the status to 4 indicating reversal
                 ]);
 
                 $transaction->update([
                     'status' => 4,
-                    'amount' => 0,
                     'new_balance' => $transaction_balance,
                 ]);
 
