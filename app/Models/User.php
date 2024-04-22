@@ -54,4 +54,16 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    function wallet(){
+        return $this->hasMany(Wallet::class,'user_id');
+    }
+
+    function vaccts(){
+        return $this->hasMany(virtual_acct::class,'user_id');
+    }
+
+    function trans(){
+        return $this->hasMany(transaction::class,'user_id');
+    }
 }

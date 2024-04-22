@@ -108,7 +108,7 @@ class UserController extends Controller
                 $users = User::all();
 
                 // Extract names from users
-                $userNames = $users->pluck('lastname');
+//                $userNames = $users->pluck('lastname');
 
 
                 // Return a JSON response with user names
@@ -397,5 +397,59 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()]);
         }
+    }
+
+    public function userProfileWallet($user_id)
+    {
+        $user=User::find($user_id);
+
+        if(!$user){
+            return response()->json([
+                "status" => "404",
+                'message' => 'User not found',
+            ],404);
+        }
+
+        return response()->json([
+            "status" => "200",
+            'message' => 'Fetched successfully',
+            'data' => $user->wallet
+        ]);
+    }
+
+    public function userProfileTransactions($user_id)
+    {
+        $user=User::find($user_id);
+
+        if(!$user){
+            return response()->json([
+                "status" => "404",
+                'message' => 'User not found',
+            ],404);
+        }
+
+        return response()->json([
+            "status" => "200",
+            'message' => 'Fetched successfully',
+            'data' => $user->trans
+        ]);
+    }
+
+    public function userProfileVaccts($user_id)
+    {
+        $user=User::find($user_id);
+
+        if(!$user){
+            return response()->json([
+                "status" => "404",
+                'message' => 'User not found',
+            ],404);
+        }
+
+        return response()->json([
+            "status" => "200",
+            'message' => 'Fetched successfully',
+            'data' => $user->vaccts
+        ]);
     }
 }

@@ -149,6 +149,7 @@ class TransactionController extends Controller
                     'status' => 4,
                 ]);
 
+
                 Transaction::create([
                     'user_id' => $user_id,
                     'title' => 'Transaction Reversal',

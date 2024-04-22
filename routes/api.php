@@ -98,5 +98,10 @@ Route::get('mcd-withdrawals', [MCDController::class, 'withdrawalList']);
 Route::get('mcd-transactions', [MCDController::class, 'transactionList']);
 Route::get('mcd-commissions', [MCDController::class, 'commissionsList']);
 
+
+Route::get('user-profile-wallet/{user_id}', [UserController::class, 'userProfileWallet']);
+Route::get('user-profile-vaccts/{user_id}', [UserController::class, 'userProfileVaccts']);
+Route::get('user-profile-trans/{user_id}', [UserController::class, 'userProfileTransactions']);
+
 });
 
