@@ -57,7 +57,7 @@ class TransactionController extends Controller
                     return response()->json(['message' => 'Transaction status updated successfully!', 'user' => $transaction]);
                 } else {
                     // Return a JSON response with the modified user details
-                    return response()->json(['message' => 'Unable to Modify transactiob status']);
+                    return response()->json(['message' => 'Unable to Modify transaction status']);
                 }
             } else {
                 return response()->json([
@@ -135,7 +135,6 @@ class TransactionController extends Controller
         if ($transaction) {
             $user_id = $transaction->user_id;
             $amount = $transaction->amount;
-            $transaction_balance = $transaction->prev_balance;
 
             // $wallet = Wallet::where('user_id', $user_id)->first();
             $wallet=Wallet::where([['user_id',$user_id], ['name','wallet']])->first();
@@ -148,7 +147,19 @@ class TransactionController extends Controller
 
                 $transaction->update([
                     'status' => 4,
-                    'new_balance' => $transaction_balance,
+                ]);
+
+                Transaction::create([
+                    'user_id' => $user_id,
+                    'title' => 'Transaction Reversal',
+                    'amount' => $transaction->amount,
+                    'status' => 1,
+                    "transaction_type" => "reversal",
+                    "remark" => "Reversal of " . $reference,
+                    'type' => 'credit',
+                    'reference' => $reference."_reversal",
+                    "prev_balance" => $wallet->balance,
+                    "new_balance" => $newbalance,
                 ]);
 
                 return response()->json(['message' => 'Transaction reversed successfully']);
@@ -227,7 +238,7 @@ class TransactionController extends Controller
             if (Auth::user()->role_id == 1) {
                 try {
 
-                    // Validate the incoming request 
+                    // Validate the incoming request
                     $request->validate(['status' => 'required']);
 
                     $acct = tbl_airtime2cash::find($id);
@@ -302,7 +313,7 @@ class TransactionController extends Controller
 
         try {
 
-            // Validate the incoming request 
+            // Validate the incoming request
             $request->validate(['status' => 'required']);
 
             $acct = virtual_acct::find($id);
@@ -577,7 +588,7 @@ class TransactionController extends Controller
 
             if (Auth::user()->role_id == 1) {
 
-                // Validate the incoming request 
+                // Validate the incoming request
                 $request->validate([
                     'referer_phone' => 'required',
                     'amount_to_earn' => 'required',
