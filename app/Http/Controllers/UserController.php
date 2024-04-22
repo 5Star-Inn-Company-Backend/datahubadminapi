@@ -293,7 +293,7 @@ class UserController extends Controller
             'description' => 'required',
         ]);
 
-        try {
+//        try {
 
             $user = User::where('email', $request->email)->orWhere('phone', $request->email)->first();
 
@@ -303,12 +303,12 @@ class UserController extends Controller
                     "message" => "User not found"
                 ],404);
             }
-            DB::transaction(function () use ($user, &$request) {
+//            DB::transaction(function () use ($user, &$request) {
                 $wallet = Wallet::where([['user_id', $user->id], ['name', 'wallet']])->first();
                 if ($wallet) {
-                    $balance =  $wallet->balance + $request->amount;
+                    $balance =  $wallet->balance;
                     $wallet->update([
-                        'balance' => $balance
+                        'balance' => $balance + $request->amount
                     ]);
                     //Generate unique transaction reference
                     $transactionReference = mt_rand(1000000000, 9999999999);
@@ -321,8 +321,9 @@ class UserController extends Controller
                         "type" => "credit",
                         'status' => 1,
                         'reference' => $transactionReference,
-                        "prev_balance" => $wallet->balance,
-                        "new_balance" => $balance,
+                        "prev_balance" => $balance,
+                        "new_balance" => $wallet->balance,
+                        "server" => '0',
                     ]);
                     return response()->json([
                         "status" => "200",
@@ -335,10 +336,10 @@ class UserController extends Controller
                         'message' => 'User Wallet not Found'
                     ],404);
                 }
-            });
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()]);
-        }
+//            });
+//        } catch (\Exception $e) {
+//            return response()->json(['error' => $e->getMessage()]);
+//        }
     }
 
     public function debituser(Request $request)
@@ -359,12 +360,12 @@ class UserController extends Controller
                     "message" => "User not found"
                 ],404);
             }
-            DB::transaction(function () use ($user, &$request) {
+//            DB::transaction(function () use ($user, &$request) {
                 $wallet = Wallet::where([['user_id', $user->id], ['name', 'wallet']])->first();
                 if ($wallet) {
-                    $balance =  $wallet->balance - $request->amount;
+                    $balance =  $wallet->balance;
                     $wallet->update([
-                        'balance' => $balance
+                        'balance' => $balance  - $request->amount
                     ]);
                     //Generate unique transaction reference
                     $transactionReference = mt_rand(1000000000, 9999999999);
@@ -377,8 +378,9 @@ class UserController extends Controller
                         "remark" => $request->description,
                         'type' => 'debit',
                         'reference' => $transactionReference,
-                        "prev_balance" => $wallet->balance,
-                        "new_balance" => $balance,
+                        "prev_balance" => $balance,
+                        "new_balance" => $wallet->balance,
+                        "server" => '0',
                     ]);
                     return response()->json([
                         "status" => "200",
@@ -392,7 +394,7 @@ class UserController extends Controller
                     ],404);
 
                 }
-            });
+//            });
 
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()]);

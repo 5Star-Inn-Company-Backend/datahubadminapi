@@ -47,6 +47,10 @@ class TransactionController extends Controller
                     return response()->json(['error' => 'Id not found'], 404);
                 }
 
+                if($request->status == 4){
+                    return $this->reversetranSF($transaction->reference);
+                }
+
                 // Get the fields and values from the request
                 $updateFields = $request->only(['status']);
 
@@ -161,6 +165,52 @@ class TransactionController extends Controller
                     'reference' => $reference."_reversal",
                     "prev_balance" => $wallet->balance,
                     "new_balance" => $newbalance,
+                    "server" => '0',
+                ]);
+
+                return response()->json(['message' => 'Transaction reversed successfully']);
+            } else {
+                return response()->json(['message' => 'Wallet not found for the user'], 404);
+            }
+        } else {
+            return response()->json(['message' => 'Transaction not found'], 404);
+        }
+    }
+
+    public function reversetranSF($reference)
+    {
+        $transaction = Transaction::where('reference', $reference)->first();
+
+        if ($transaction) {
+            $user_id = $transaction->user_id;
+            $amount = $transaction->amount;
+
+            // $wallet = Wallet::where('user_id', $user_id)->first();
+            $wallet=Wallet::where([['user_id',$user_id], ['name','wallet']])->first();
+
+            if ($wallet) {
+                $balance = $wallet->balance; // Add the amount back to the balance
+                $wallet->update([
+                    'balance' => $balance  + $amount,
+                ]);
+
+                $transaction->update([
+                    'status' => 4,
+                ]);
+
+
+                Transaction::create([
+                    'user_id' => $user_id,
+                    'title' => 'Transaction Reversal',
+                    'amount' => $transaction->amount,
+                    'status' => 1,
+                    "transaction_type" => "reversal",
+                    "remark" => "Reversal of " . $reference,
+                    'type' => 'credit',
+                    'reference' => $reference."_reversal",
+                    "prev_balance" => $balance,
+                    "new_balance" => $wallet->balance,
+                    "server" => '0',
                 ]);
 
                 return response()->json(['message' => 'Transaction reversed successfully']);
