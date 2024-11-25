@@ -68,7 +68,7 @@ class UserController extends Controller
         $password = $request->password;
         $email = $request->email;
 
-        if (Auth::attempt(['email' => $email, 'password' => $password])) {
+        if (Auth::attempt(['email' => $email, 'password' => $password, 'role_id' => '1'])) {
             $user = $request->user();
 
             if ($user->role_id != 1) {
