@@ -19,7 +19,7 @@ class TransactionController extends Controller
     {
         if (Auth::check()) {
             if (Auth::user()->role_id == 1) {
-                $transactions = transaction::all();
+                $transactions = transaction::with('user')->latest()->get();
 
                 return response()->json(['transactions' => $transactions]);
             } else {
@@ -81,7 +81,7 @@ class TransactionController extends Controller
     {
         if (Auth::check()) {
             if (Auth::user()->role_id == 1) {
-                $pendingTransactions = transaction::where('status', 0)->get();
+                $pendingTransactions = transaction::where('status', 0)->with('user')->latest()->get();
 
                 if ($pendingTransactions->isEmpty()) {
                     return response()->json([
@@ -111,7 +111,7 @@ class TransactionController extends Controller
     {
         if (Auth::check()) {
             if (Auth::user()->role_id == 1) {
-                $reversedTransactions = Transaction::where('status', 4)->get();
+                $reversedTransactions = Transaction::where('status', 4)->with('user')->latest()->get();
 
                 if ($reversedTransactions->isEmpty()) {
                     return response()->json(['No reversed transactions']);
