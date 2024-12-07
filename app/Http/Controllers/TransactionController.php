@@ -333,29 +333,14 @@ class TransactionController extends Controller
 
     public function listvirtualacct()
     {
+        // Retrieve all virtual accounts with their owners
+        $virtualAccounts = virtual_acct::with('user')->latest()->get();
 
-        if (Auth::check()) {
-            if (Auth::user()->role_id == 1) {
-                // Retrieve all virtual accounts with their owners
-                $virtualAccounts = virtual_acct::with('user')->get();
-
-                if ($virtualAccounts->isEmpty()) {
-                    return response()->json(['No User with virtual accounts']);
-                } else {
-                    // Return a JSON response with virtual accounts and their owners
-                    return response()->json(['virtual_accounts' => $virtualAccounts]);
-                }
-            } else {
-                return response()->json([
-                    "status" => "401",
-                    "message" => "You are not allowed to view all users."
-                ]);
-            }
+        if ($virtualAccounts->isEmpty()) {
+            return response()->json(['No User with virtual accounts']);
         } else {
-            return response()->json([
-                "status" => "200",
-                "message" => "Unauthenticated"
-            ]);
+            // Return a JSON response with virtual accounts and their owners
+            return response()->json(['virtual_accounts' => $virtualAccounts]);
         }
     }
 
@@ -669,25 +654,11 @@ class TransactionController extends Controller
 
     public function referelist()
     {
-        if (Auth::check()) {
-            if (Auth::user()->role_id == 1) {
-                $referes = User::where('referer_id', null)->get();
+        $referes = User::where('referer_id', '!=', null)->with('referee')->latest()->get();
 
-                return response()->json([
-                    'Referes' => $referes
-                ]);
-            } else {
-                return response()->json([
-                    "status" => "401",
-                    "message" => "You are not allowed to view all Referes"
-                ]);
-            }
-        } else {
-            return response()->json([
-                "status" => "200",
-                "message" => "Unauthenticated"
-            ]);
-        }
+        return response()->json([
+            'Referes' => $referes
+        ]);
     }
 
     public function listconfig()

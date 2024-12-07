@@ -66,4 +66,8 @@ class User extends Authenticatable
     function trans(){
         return $this->hasMany(transaction::class,'user_id');
     }
+
+    function referee(){
+        return $this->belongsTo(User::class,'referer_id')->select("id","firstname","lastname");
+    }
 }
