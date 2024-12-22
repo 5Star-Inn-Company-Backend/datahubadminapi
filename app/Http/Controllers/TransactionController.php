@@ -378,17 +378,20 @@ class TransactionController extends Controller
         $lastMonth = Carbon::now()->subMonth();
         $currentMonth = Carbon::now();
 
-        $activeUsers = Transaction::whereBetween('created_at', [$lastMonth, $currentMonth])->get();
+        $activeUsers = Transaction::whereBetween('created_at', [$lastMonth, $currentMonth])->select('user_id')->distinct()->get();
         $userDetails = [];
         foreach ($activeUsers as $transaction) {
             $userId = $transaction->user_id;
             $userDetails = User::find($userId);
-            // Store user details in the array
 
-            $active_users[] = [
-                // 'transaction_details' => $transaction,
-                'user_details' => $userDetails,
-            ];
+            // Store user details in the array if the user is not null
+
+            if($userDetails) {
+                $active_users[] = [
+                    // 'transaction_details' => $transaction,
+                    'user_details' => $userDetails,
+                ];
+            }
         }
 
         return response()->json([
@@ -402,7 +405,7 @@ class TransactionController extends Controller
         $lastMonth = Carbon::now()->subMonth();
         $currentMonth = Carbon::now();
 
-        $dormantUsersTransactions = Transaction::whereNotBetween('created_at', [$lastMonth, $currentMonth])->get();
+        $dormantUsersTransactions = Transaction::whereNotBetween('created_at', [$lastMonth, $currentMonth])->select('user_id')->distinct()->get();
 
         $dormantUsers = [];
 
@@ -410,11 +413,14 @@ class TransactionController extends Controller
             $userId = $transaction->user_id;
             $userDetails = User::find($userId);
 
-            // Store user details in the array
-            $dormantUsers[] = [
-                // 'transaction_details' => $transaction,
-                'user_details' => $userDetails,
-            ];
+            // Store user details in the array if the user is not null
+
+            if($userDetails) {
+                $dormantUsers[] = [
+                    // 'transaction_details' => $transaction,
+                    'user_details' => $userDetails,
+                ];
+            }
         }
 
         return response()->json(['dormant_users' => $dormantUsers]);

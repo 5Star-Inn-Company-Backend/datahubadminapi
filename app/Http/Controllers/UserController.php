@@ -102,29 +102,15 @@ class UserController extends Controller
     //list all users
     public function listusers()
     {
-        if (Auth::check()) {
-            if (Auth::user()->role_id == 1) {
-                // Fetch all users from the 'users' table
-                $users = User::all();
+        // Fetch all users from the 'users' table
+        $users = User::latest()->get();
 
-                // Extract names from users
+        // Extract names from users
 //                $userNames = $users->pluck('lastname');
 
 
-                // Return a JSON response with user names
-                return response()->json(['users' => $users]);
-            } else {
-                return response()->json([
-                    "status" => "401",
-                    "message" => "You are not allowed to view all users."
-                ]);
-            }
-        } else {
-            return response()->json([
-                "status" => "200",
-                "message" => "Unauthenticated"
-            ]);
-        }
+        // Return a JSON response with user names
+        return response()->json(['users' => $users]);
     }
 
     // Search users based on a criteria
