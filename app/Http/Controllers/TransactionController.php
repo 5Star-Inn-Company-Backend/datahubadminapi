@@ -374,72 +374,50 @@ class TransactionController extends Controller
 
     public function activeuser()
     {
-        if (Auth::check()) {
-            if (Auth::user()->role_id == 1) {
-                // Fetch active users (created between last month and current month)
-                $lastMonth = Carbon::now()->subMonth();
-                $currentMonth = Carbon::now();
+        // Fetch active users (created between last month and current month)
+        $lastMonth = Carbon::now()->subMonth();
+        $currentMonth = Carbon::now();
 
-                $activeUsers = Transaction::whereBetween('created_at', [$lastMonth, $currentMonth])->get();
-                $userDetails = [];
-                foreach ($activeUsers as $transaction) {
-                    $userId = $transaction->user_id;
-                    $userDetails = User::find($userId);
-                }
+        $activeUsers = Transaction::whereBetween('created_at', [$lastMonth, $currentMonth])->get();
+        $userDetails = [];
+        foreach ($activeUsers as $transaction) {
+            $userId = $transaction->user_id;
+            $userDetails = User::find($userId);
+            // Store user details in the array
 
-                return response()->json([
-                    'active_users' =>  $userDetails
-                ]);
-            } else {
-                return response()->json([
-                    "status" => "401",
-                    "message" => "You are not allowed to view all users."
-                ]);
-            }
-        } else {
-            return response()->json([
-                "status" => "200",
-                "message" => "Unauthenticated"
-            ]);
+            $active_users[] = [
+                // 'transaction_details' => $transaction,
+                'user_details' => $userDetails,
+            ];
         }
+
+        return response()->json([
+            'active_users' =>  $active_users
+        ]);
     }
 
     public function dormantuser()
     {
-        if (Auth::check()) {
-            if (Auth::user()->role_id == 1) {
-                // Fetch dormant users (not created between current month and last month)
-                $lastMonth = Carbon::now()->subMonth();
-                $currentMonth = Carbon::now();
+        // Fetch dormant users (not created between current month and last month)
+        $lastMonth = Carbon::now()->subMonth();
+        $currentMonth = Carbon::now();
 
-                $dormantUsersTransactions = Transaction::whereNotBetween('created_at', [$lastMonth, $currentMonth])->get();
+        $dormantUsersTransactions = Transaction::whereNotBetween('created_at', [$lastMonth, $currentMonth])->get();
 
-                $dormantUsers = [];
+        $dormantUsers = [];
 
-                foreach ($dormantUsersTransactions as $transaction) {
-                    $userId = $transaction->user_id;
-                    $userDetails = User::find($userId);
+        foreach ($dormantUsersTransactions as $transaction) {
+            $userId = $transaction->user_id;
+            $userDetails = User::find($userId);
 
-                    // Store user details in the array
-                    $dormantUsers[] = [
-                        // 'transaction_details' => $transaction,
-                        'user_details' => $userDetails,
-                    ];
-                }
-
-                return response()->json(['dormant_users' => $dormantUsers]);
-            } else {
-                return response()->json([
-                    "status" => "401",
-                    "message" => "You are not allowed to view all users."
-                ]);
-            }
-        } else {
-            return response()->json([
-                "status" => "200",
-                "message" => "Unauthenticated"
-            ]);
+            // Store user details in the array
+            $dormantUsers[] = [
+                // 'transaction_details' => $transaction,
+                'user_details' => $userDetails,
+            ];
         }
+
+        return response()->json(['dormant_users' => $dormantUsers]);
     }
 
 

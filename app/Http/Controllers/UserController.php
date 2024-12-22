@@ -316,6 +316,7 @@ class UserController extends Controller
                         'user_id' => $user->id,
                         'title' => 'Admin Fund',
                         'amount' => $request->amount,
+                        'recipient' => $request->email,
                         "transaction_type" => "wallet_funding",
                         "remark" => $request->description,
                         "type" => "credit",
