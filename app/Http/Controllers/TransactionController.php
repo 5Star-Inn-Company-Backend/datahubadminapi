@@ -382,7 +382,7 @@ class TransactionController extends Controller
         $userDetails = [];
         foreach ($activeUsers as $transaction) {
             $userId = $transaction->user_id;
-            $userDetails = User::find($userId);
+            $userDetails = User::with('walletBalance')->find($userId);
 
             // Store user details in the array if the user is not null
 
@@ -411,7 +411,7 @@ class TransactionController extends Controller
 
         foreach ($dormantUsersTransactions as $transaction) {
             $userId = $transaction->user_id;
-            $userDetails = User::find($userId);
+            $userDetails = User::with('walletBalance')->find($userId);
 
             // Store user details in the array if the user is not null
 

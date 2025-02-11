@@ -103,11 +103,7 @@ class UserController extends Controller
     public function listusers()
     {
         // Fetch all users from the 'users' table
-        $users = User::latest()->get();
-
-        // Extract names from users
-//                $userNames = $users->pluck('lastname');
-
+        $users = User::latest()->with('walletBalance')->get();
 
         // Return a JSON response with user names
         return response()->json(['users' => $users]);
@@ -122,13 +118,13 @@ class UserController extends Controller
                 $searchTerm = $request->input('search');
 
                 // Search users based on the criteria (you can modify this query based on your requirements)
-                $users = User::where('firstname', 'like', '%' . $searchTerm . '%')->orwhere('lastname', 'like', '%' . $searchTerm . '%')->get();
+                $users = User::where('firstname', 'like', '%' . $searchTerm . '%')->orwhere('lastname', 'like', '%' . $searchTerm . '%')->with('walletBalance')->get();
 
                 // Extract names from the search result
                 // Extract names from the search result
-                $names = $users->map(function ($user) {
-                    return $user->firstname . ' ' . $user->lastname;
-                });
+//                $names = $users->map(function ($user) {
+//                    return $user->firstname . ' ' . $user->lastname;
+//                });
 
                 // $firstNames = $users->pluck('firstname');
                 // $lastName = $users->pluck('lastname');

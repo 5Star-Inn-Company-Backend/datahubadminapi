@@ -59,6 +59,10 @@ class User extends Authenticatable
         return $this->hasMany(Wallet::class,'user_id');
     }
 
+    function walletBalance(){
+        return $this->hasOne(Wallet::class,'user_id')->where('name','wallet');
+    }
+
     function vaccts(){
         return $this->hasMany(virtual_acct::class,'user_id');
     }
